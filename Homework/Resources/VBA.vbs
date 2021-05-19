@@ -6,33 +6,48 @@ Dim CompanyLastRow As Long
 Dim CompanyFirstValueOpen As Double
 Dim CompanyLastValueClose As Double
 Dim TickerRow As Long
-Dim StockVol As Long
+Dim StockVol As Variant
+Dim Active_Sheet As String
+Dim LastRow As Long
 
 'Determine the first row
 
+Active_Sheet = "test"
+For SheetCount = 1 To 3
+
+If SheetCount = 1 Then Active_Sheet = "2014"
+If SheetCount = 2 Then Active_Sheet = "2015"
+If SheetCount = 3 Then Active_Sheet = "2016"
 FirstRow = 2
-LastRow = Cells(Rows.Count, 1).End(xlUp).Row
 TickerRow = 2
+LastRow = Worksheets(Active_Sheet).Cells(Rows.Count, 1).End(xlUp).Row
 
 'MsgBox (FirstRow)
 'MsgBox (LastRow)
+
+
+'create headers
+Worksheets(Active_Sheet).Cells(1, "I") = "Ticker"
+Worksheets(Active_Sheet).Cells(1, "J") = "Difference"
+Worksheets(Active_Sheet).Cells(1, "K") = "% Difference"
+Worksheets(Active_Sheet).Cells(1, "L") = "Total Volume"
 
 
 
 'Determine the number of tickers
     For Counter1 = FirstRow To LastRow
 
-    StockVol = StockVol + Cells(Counter1, "G")
+    StockVol = StockVol + Worksheets(Active_Sheet).Cells(Counter1, "G")
 
     'First row of a company stuff
-    If Cells(Counter1, "A") <> CompanyName Then
+    If Worksheets(Active_Sheet).Cells(Counter1, "A") <> CompanyName Then
         
         'set the new compnay name
-        CompanyName = Cells(Counter1, "A")
+        CompanyName = Worksheets(Active_Sheet).Cells(Counter1, "A")
         
         'set the new first Row and value
         CompanyFirstRow = Counter1
-        CompanyFirstValueOpen = Cells(Counter1, "C")
+        CompanyFirstValueOpen = Worksheets(Active_Sheet).Cells(Counter1, "C")
         
         'print company name for testing
         'Cells(Counter1, "H") = CompanyName
@@ -46,25 +61,28 @@ TickerRow = 2
     
     
     'last row of a compnay stuff
-    If Cells(Counter1, "A") <> Cells(Counter1 + 1, "A") Then
+    If Worksheets(Active_Sheet).Cells(Counter1, "A") <> Worksheets(Active_Sheet).Cells(Counter1 + 1, "A") Then
         
         'set the new last Row and value
         CompanyLastRow = Counter1
-        CompanyLastValueClose = Cells(Counter1, "F")
+        CompanyLastValueClose = Worksheets(Active_Sheet).Cells(Counter1, "F")
         
         'print the value for testing
         'Cells(Counter1, "J") = CompanyLastValueClose
         
         'set the company ticker
-        Cells(TickerRow, "I") = CompanyName
+        Worksheets(Active_Sheet).Cells(TickerRow, "I") = CompanyName
         
         
-        'set the difference
-        Cells(TickerRow, "J") = CompanyLastValueClose - CompanyFirstValueOpen
-        'set the difference percentage
-        Cells(TickerRow, "K") = (CompanyLastValueClose - CompanyFirstValueOpen) / CompanyFirstValueOpen
+        'set the difference and conditinal formatting
+        Worksheets(Active_Sheet).Cells(TickerRow, "J") = CompanyLastValueClose - CompanyFirstValueOpen
+        If CompanyLastValueClose - CompanyFirstValueOpen < 0 Then Worksheets(Active_Sheet).Cells(TickerRow, "J").Interior.ColorIndex = 3
+        If CompanyLastValueClose - CompanyFirstValueOpen > 0 Then Worksheets(Active_Sheet).Cells(TickerRow, "J").Interior.ColorIndex = 4
+        'set the difference percentage (added if because there are some 0 values
+        If CompanyLastValueClose - CompanyFirstValueOpen <> 0 And CompanyFirstValueOpen <> 0 Then Worksheets(Active_Sheet).Cells(TickerRow, "K") = (CompanyLastValueClose - CompanyFirstValueOpen) / CompanyFirstValueOpen
+        Worksheets(Active_Sheet).Cells(TickerRow, "K").NumberFormat = "0.00%"
         'set the stock vol
-        Cells(TickerRow, "L") = StockVol
+        Worksheets(Active_Sheet).Cells(TickerRow, "L") = StockVol
         'reset the stock vol
         StockVol = 0
         'increment the ticker
@@ -74,7 +92,7 @@ TickerRow = 2
         
       
     Next Counter1
-
+Next SheetCount
 'MsgBox (Company_Count)
 
 
